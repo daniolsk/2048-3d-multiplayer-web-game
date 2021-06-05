@@ -206,7 +206,11 @@ io.on('connection', client => {
                         } else if (max1 > max0) {
                             io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with max number: " + max1});
                         } else {
+<<<<<<< HEAD
                             io.sockets.emit("WINNER", {message: "Time is up! DRAW! Max number was: " + max0});
+=======
+                            io.sockets.emit("WINNER", {message: "Time is up! DRA W! Max number was: " + max0});
+>>>>>>> 41e8d5e (Fixed bug)
                         }
                     }
                 }, 1000);
@@ -247,6 +251,10 @@ io.on('connection', client => {
             });
 
             if (GAME_STARTED || GAME_STARTING){
+<<<<<<< HEAD
+=======
+                clearInterval(TIME_INTERVAL);
+>>>>>>> 41e8d5e (Fixed bug)
                 io.sockets.emit("INFO", {message: "Player disconnected! Winner: " + PLAYERS[0].id});
                 if (STARTING_TIMEOUT){
                     clearTimeout(STARTING_TIMEOUT);
