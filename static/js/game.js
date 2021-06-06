@@ -111,8 +111,10 @@ async function init() {
     container.append(renderer1.domElement);
     container2.append(renderer2.domElement);
 
-    camera1.position.set(1000, 220, 0)
-    camera2.position.set(1000, 220, 0)
+    console.log(window.innerWidth/2)
+
+    camera1.position.set(1000/((window.innerWidth/2)/800), 220, 0)
+    camera2.position.set(1000/((window.innerWidth/2)/800), 220, 0)
 
     // var axes = new THREE.AxesHelper(1000)
     // scene.add(axes)
@@ -137,6 +139,9 @@ async function init() {
         camera1.updateProjectionMatrix();
         camera2.aspect = (window.innerWidth/2) / window.innerHeight;
         camera2.updateProjectionMatrix();
+
+        camera1.position.set(1000/((window.innerWidth/2)/800),220,0)
+        camera2.position.set(1000/((window.innerWidth/2)/800),220,0)
 
         renderer1.setSize(window.innerWidth/2, window.innerHeight);
         renderer2.setSize(window.innerWidth/2, window.innerHeight);
