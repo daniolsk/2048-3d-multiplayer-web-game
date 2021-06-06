@@ -1,1 +1,5 @@
 1. Klasy +  webpack + dziedziczenie
+<<<<<<< HEAD
+=======
+2. Model 3D (Plansza)
+>>>>>>> ad2c001e7b23ecd711229c0ca23841f589257fe3
