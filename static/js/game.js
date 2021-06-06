@@ -1,4 +1,7 @@
 const textures = {}
+
+let socket;
+
 async function init() {
 
     const texturesTab = [
@@ -20,7 +23,17 @@ async function init() {
         textures[texturePath] = texture
     }
 
-    let socket = io('ws://localhost:3000', {
+    let infoContainerElement = document.getElementById("info-container");
+    let playerCountElement = document.getElementById("player-count");
+    let gameStatusElement = document.getElementById("game-status");
+    let playerCountContainerElement = document.getElementById("player-count-container"); 
+
+    let timeElement = document.getElementById("time"); 
+
+    let winnerContainer = document.getElementById("winner-container");
+    let winnerInfoElement = document.getElementById("winner-info"); 
+
+    socket = io('ws://localhost:3000', {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
@@ -28,16 +41,32 @@ async function init() {
     });
     socket.on('ID', (data) => {
         console.log('Got new player id: ' + data.id);
+        
         console.log('Current players: ' + data.playerCount);
+        playerCountElement.innerHTML = data.playerCount;
 
         // ID zapisuje w localStorage aby móć odowłać się do niego w każdym miejscu
         localStorage.setItem('id', data.id);
     });
     socket.on('ERROR', (data) => {
         console.log(data.message);
+
+        gameStatusElement.innerHTML = data.message;
+        playerCountContainerElement.style.display = "none";
     });
     socket.on('INFO', (data) => {
-        console.log(data.message);
+        if (data.message){
+            console.log(data.message)
+
+            if (data.message == "Game started..."){
+                infoContainerElement.style.display = "none";
+            } else {
+                gameStatusElement.innerHTML = data.message;
+            }
+        } 
+        if (data.playerCount){
+            playerCountElement.innerHTML = data.playerCount;
+        }
     });
     socket.on('TABLE_UPDATE', (data) => {
         data.forEach(player => {
@@ -50,9 +79,24 @@ async function init() {
     });
     socket.on('TIME_UPDATE', (data) => {
         console.log(data);
+
+        timeElement.style.display = "flex";
+        timeElement.innerHTML = data;
     });
     socket.on('WINNER', (data) => {
-        console.log(data.message);
+        console.log(data);
+
+        if (data.winnerId == localStorage.getItem("id")){
+            winnerInfoElement.innerHTML = "YOU WON!"
+        } else {
+            winnerInfoElement.innerHTML = "YOU LOST!"
+        }
+
+        console.log(data.winnerId, localStorage.getItem("id"))
+
+        winnerContainer.style.display = "flex";
+
+        socket.disconnect();
     });
 
     const move = (direction) => {
@@ -110,8 +154,6 @@ async function init() {
 
     container.append(renderer1.domElement);
     container2.append(renderer2.domElement);
-
-    console.log(window.innerWidth/2)
 
     camera1.position.set(1000/((window.innerWidth/2)/800), 220, 0)
     camera2.position.set(1000/((window.innerWidth/2)/800), 220, 0)

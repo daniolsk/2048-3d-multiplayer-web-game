@@ -8,19 +8,10 @@
         <script src="/js/three.min.js"></script>
         <script src="/js/OrbitControls.js"></script>
         <script src="/js/game.js"></script>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/css/style.css" />
         <title>2048</title>
-        <style>
-            body
-            {
-                margin: 0;
-                padding: 0;
-            }
-           #container
-           {
-               display: flex;
-               flex-direction: row;
-           }
-        </style>
         <!-- <button onclick="move('up')">MOVE UP</button>
         <button onclick="move('down')"">MOVE DOWN</button>
         <button onclick="move('left')"">MOVE LEFT</button>
@@ -29,9 +20,23 @@
         <table id="player2"></table> -->
     </head>
     <body>
+        <div id="time"></div>
+        <div id="info-container">
+            <div class="info">
+                <h2>Welcome to 2048!</h2>
+                <h3 id="game-status">Waiting for players...</h3>
+                <h3 id="player-count-container">Current players count: <span id="player-count">0</span></h4>
+            </div>
+        </div>
+        <div id="winner-container">
+            <div class="info">
+                <h2 id="winner-info">siema</h1>
+                <button onClick="window.location.reload();">Play again!</button>
+            </div>
+        </div>
         <div id="container">
-            <div id="root" style="width: 50vw;height: 49vh;"></div>
-            <div id="root2" style="width: 50vw;height: 49vh;"></div>
+            <div id="root" style="width: 50vw; height: 49vh"></div>
+            <div id="root2" style="width: 50vw; height: 49vh"></div>
         </div>
         <!-- <script>
             // Tworze obiekt socket (łącze się z serverem)

@@ -171,6 +171,7 @@ io.on('connection', client => {
         ]});
 
         console.log("Client connected... Current players: " + PLAYER_COUNT);
+        io.sockets.emit("INFO", {playerCount: PLAYER_COUNT});
 
         if (PLAYER_COUNT == 2){
             GAME_STARTING = true;
@@ -181,6 +182,17 @@ io.on('connection', client => {
                 STARTING_TIMEOUT = null;
                 GAME_STARTING = false;
                 GAME_STARTED = true;
+
+                PLAYERS.forEach(player => {
+                    player.table = [
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0]
+                    ];
+                    player.score = 0;
+                })
+
                 io.sockets.emit("INFO", {message: "Game started..."});
                     
                 for (let i=0; i<PLAYERS.length; i++){
@@ -202,12 +214,14 @@ io.on('connection', client => {
                         console.log(max0, max1);
                         
                         if (max0 > max1){
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with max number: " + max0});
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with max number: " + max0, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
                         } else if (max1 > max0) {
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with max number: " + max1});
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with max number: " + max1, winnerId: PLAYERS[1].id, score: PLAYERS[1].score});
                         } else {
-                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Max number was: " + max0});
+                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Max number was: " + max0, winnerId: null, score: PLAYERS[1].score});
                         }
+
+                        TIME = 30;
                     }
                 }, 1000);
 
@@ -219,7 +233,8 @@ io.on('connection', client => {
 
     client.on("MOVE", (data) => {
         if (GAME_STARTED){
-            playerToMove = PLAYERS.find((player) => (player.id == data.id));
+            let playerToMove = PLAYERS.find((player) => (player.id == data.id));
+            let otherPlayer = PLAYERS.filter((player) => (player.id != playerToMove.id));
 
             move(data.direction, playerToMove.table);
             generate(playerToMove.table);
@@ -235,7 +250,7 @@ io.on('connection', client => {
 
                 TIME = 30;
 
-                io.sockets.emit("WINNER", {message: `Player: ${playerToMove.id} has lost!`});
+                io.sockets.emit("WINNER", {message: "Player " + playerToMove.id + " has lost!", winnerId: otherPlayer[0].id, score: otherPlayer[0].score});
             }
         }
     })
@@ -248,11 +263,12 @@ io.on('connection', client => {
 
             if (GAME_STARTED || GAME_STARTING){
                 clearInterval(TIME_INTERVAL);
-                io.sockets.emit("INFO", {message: "Player disconnected! Winner: " + PLAYERS[0].id});
+                io.sockets.emit("WINNER", {message: "Player disconnected! Winner: " + PLAYERS[0].id});
                 if (STARTING_TIMEOUT){
                     clearTimeout(STARTING_TIMEOUT);
                     clearInterval(TIME_INTERVAL);
                     io.sockets.emit("INFO", {message: "Game starting aborted..."});
+                    io.sockets.emit("INFO", {playerCount: PLAYER_COUNT-1});
                 }
                 GAME_STARTED = false;
                 GAME_STARTING = false;
