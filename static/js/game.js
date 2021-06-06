@@ -4,6 +4,7 @@ let socket;
 
 async function init() {
 
+
     const texturesTab = [
         "/gfx/2.png",
         "/gfx/4.png",
@@ -26,12 +27,12 @@ async function init() {
     let infoContainerElement = document.getElementById("info-container");
     let playerCountElement = document.getElementById("player-count");
     let gameStatusElement = document.getElementById("game-status");
-    let playerCountContainerElement = document.getElementById("player-count-container"); 
+    let playerCountContainerElement = document.getElementById("player-count-container");
 
-    let timeElement = document.getElementById("time"); 
+    let timeElement = document.getElementById("time");
 
     let winnerContainer = document.getElementById("winner-container");
-    let winnerInfoElement = document.getElementById("winner-info"); 
+    let winnerInfoElement = document.getElementById("winner-info");
 
     socket = io('ws://localhost:3000', {
         transports: ['websocket'],
@@ -41,7 +42,7 @@ async function init() {
     });
     socket.on('ID', (data) => {
         console.log('Got new player id: ' + data.id);
-        
+
         console.log('Current players: ' + data.playerCount);
         playerCountElement.innerHTML = data.playerCount;
 
@@ -53,16 +54,16 @@ async function init() {
         playerCountContainerElement.style.display = "none";
     });
     socket.on('INFO', (data) => {
-        if (data.message){
+        if (data.message) {
             console.log(data.message)
 
-            if (data.message == "Game started..."){
+            if (data.message == "Game started...") {
                 infoContainerElement.style.display = "none";
             } else {
                 gameStatusElement.innerHTML = data.message;
             }
-        } 
-        if (data.playerCount){
+        }
+        if (data.playerCount) {
             playerCountElement.innerHTML = data.playerCount;
         }
     });
@@ -75,8 +76,10 @@ async function init() {
         data.forEach(player => {
             if (player.id == localStorage.getItem("id")) {
                 fillCubeInfo(0, player.table);
+                score1 = player.score
             } else {
                 fillCubeInfo(1, player.table);
+                score2 = player.score
             }
         })
     });
@@ -86,7 +89,7 @@ async function init() {
     });
     socket.on('WINNER', (data) => {
         console.log(data);
-        if (data.winnerId == localStorage.getItem("id")){
+        if (data.winnerId == localStorage.getItem("id")) {
             winnerInfoElement.innerHTML = "YOU WON! Your score: " + data.score;
         } else if (!data.winnerId) {
             winnerInfoElement.innerHTML = "DRAW! Your score: " + data.score;
@@ -155,16 +158,16 @@ async function init() {
     container.append(renderer1.domElement);
     container2.append(renderer2.domElement);
 
-    camera1.position.set(1000/((window.innerWidth/2)/800), 220, 0)
-    camera2.position.set(1000/((window.innerWidth/2)/800), 220, 0)
+    camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
+    camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
 
     // var axes = new THREE.AxesHelper(1000)
     // scene.add(axes)
 
     const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
     const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
-    createBoard(scene1, "YOU", 0xbbada0, 0xcdc1b5, score1, scoreText1)
-    createBoard(scene2, "OPONENT", 0xD98880, 0xD98880, score2, scoreText2)
+    createBoard(scene1, "YOU", 0xbbada0, 0xcdc1b5)
+    createBoard(scene2, "OPONENT", 0xD98880, 0xD98880)
 
 
 
@@ -177,16 +180,16 @@ async function init() {
 
     function onWindowResize() {
 
-        camera1.aspect = (window.innerWidth/2) / window.innerHeight;
+        camera1.aspect = (window.innerWidth / 2) / window.innerHeight;
         camera1.updateProjectionMatrix();
-        camera2.aspect = (window.innerWidth/2) / window.innerHeight;
+        camera2.aspect = (window.innerWidth / 2) / window.innerHeight;
         camera2.updateProjectionMatrix();
 
-        camera1.position.set(1000/((window.innerWidth/2)/800),220,0)
-        camera2.position.set(1000/((window.innerWidth/2)/800),220,0)
+        camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
+        camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
 
-        renderer1.setSize(window.innerWidth/2, window.innerHeight);
-        renderer2.setSize(window.innerWidth/2, window.innerHeight);
+        renderer1.setSize(window.innerWidth / 2, window.innerHeight);
+        renderer2.setSize(window.innerWidth / 2, window.innerHeight);
 
     }
 
@@ -194,7 +197,7 @@ async function init() {
 
 
 
-    function createBoard(sceneBoard, player, borderColor, gridColor, scoreBoard, scoreTextBoard) {
+    function createBoard(sceneBoard, player, borderColor, gridColor) {
 
         loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
 
@@ -217,7 +220,7 @@ async function init() {
         });
         loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
 
-            const textMesh = new THREE.TextGeometry('Score: ' + scoreBoard.toString(), {
+            const textMesh = new THREE.TextGeometry("Score: ", {
                 font: font,
                 size: 30,
                 height: 5,
@@ -229,10 +232,38 @@ async function init() {
                 bevelSegments: 5
             });
             const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
-            scoreTextBoard = new THREE.Mesh(textMesh, materialText)
-            scoreTextBoard.rotateY((Math.PI * 0.5))
-            scoreTextBoard.position.set(0, 250, 230)
-            sceneBoard.add(scoreTextBoard)
+            const scoreString = new THREE.Mesh(textMesh, materialText)
+            scoreString.rotateY((Math.PI * 0.5))
+            scoreString.position.set(0, 250, 230)
+            sceneBoard.add(scoreString)
+        });
+
+        loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+
+            const textMesh = new THREE.TextGeometry("0", {
+                font: font,
+                size: 30,
+                height: 5,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 5,
+                bevelSize: 1,
+                bevelOffset: 0,
+                bevelSegments: 5
+            });
+            const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
+            if (player == "YOU") {
+                scoreText1 = new THREE.Mesh(textMesh, materialText)
+                scoreText1.rotateY((Math.PI * 0.5))
+                scoreText1.position.set(0, 250, 100)
+                scene1.add(scoreText1)
+            }
+            else {
+                scoreText2 = new THREE.Mesh(textMesh, materialText)
+                scoreText2.rotateY((Math.PI * 0.5))
+                scoreText2.position.set(0, 250, 100)
+                scene2.add(scoreText2)
+            }
 
         });
 
@@ -436,6 +467,56 @@ async function init() {
 
             }
         }
+        if (playerNumber == 0) {
+            scene1.remove(scoreText1)
+            loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+
+                const textMesh = new THREE.TextGeometry(score1.toString(), {
+                    font: font,
+                    size: 30,
+                    height: 5,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 5,
+                    bevelSize: 1,
+                    bevelOffset: 0,
+                    bevelSegments: 5
+                });
+                const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
+                scoreText1 = new THREE.Mesh(textMesh, materialText)
+                scoreText1.rotateY((Math.PI * 0.5))
+                scoreText1.position.set(0, 250, 100)
+                scene1.add(scoreText1)
+
+            });
+
+
+        }
+        else {
+            scene2.remove(scoreText2)
+            loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
+
+                const textMesh = new THREE.TextGeometry(score2.toString(), {
+                    font: font,
+                    size: 30,
+                    height: 5,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 5,
+                    bevelSize: 1,
+                    bevelOffset: 0,
+                    bevelSegments: 5
+                });
+                const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
+                scoreText2 = new THREE.Mesh(textMesh, materialText)
+                scoreText2.rotateY((Math.PI * 0.5))
+                scoreText2.position.set(0, 250, 100)
+                scene2.add(scoreText2)
+
+            });
+
+        }
+
 
     }
 
