@@ -1,4 +1,1 @@
 1. Klasy +  webpack + dziedziczenie
-2. Model 3D (Plansza)
-
-3. Score fix w html
