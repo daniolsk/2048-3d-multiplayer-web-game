@@ -1,8 +1,19 @@
 const express = require('express');
 const app = express();
 
+const mongoose = require('mongoose');
+// zaq1@WSX
+
 const { clearInterval } = require('timers');
 const { v4: uuidv4 } = require('uuid');
+
+const { saveScore, getBestScores } = require('./dbOperations');
+
+mongoose
+    .connect("mongodb+srv://daniel:daniel333@2048.80jwz.mongodb.net/2048?retryWrites=true&w=majority",
+     { useUnifiedTopology: true , useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true })
+    .then(() => console.log('Connected to MongoDB...'))
+    .catch(err => console.error(err));
 
 // WEBSOCKETS
 const server = require('http').createServer(app);
@@ -19,6 +30,7 @@ let STARTING_TIMEOUT = null;
 let TIME_INTERVAL = null;
 
 app.use(express.static("static"));
+app.use(express.json());
 
 const generate = (tableToModify) => {
     while(true){
@@ -272,7 +284,7 @@ io.on('connection', client => {
 
             if (GAME_STARTED || GAME_STARTING){
                 clearInterval(TIME_INTERVAL);
-                io.sockets.emit("WINNER", {message: "Player disconnected! Winner: " + PLAYERS[0].id});
+                io.sockets.emit("WINNER", {message: "Player disconnected! Winner: " + PLAYERS[0].id, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
                 if (STARTING_TIMEOUT){
                     clearTimeout(STARTING_TIMEOUT);
                     clearInterval(TIME_INTERVAL);
@@ -294,6 +306,23 @@ io.on('connection', client => {
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/static/index.html");
 });
+
+// score
+app.post('/api/saveScore', (req, res) => {
+    console.log(req.body);
+
+    saveScore(req.body, res);
+
+    // res.send(JSON.stringify({message: "Score saved!"}));
+});
+app.get("/api/leaderboard", (req, res) => {
+    getBestScores(res);
+
+    // res.send(JSON.stringify({message: "ok"}));
+})
+app.get("/leaderboard", (req, res) => {
+    res.sendFile(__dirname + "/static/leaderboard.html");
+})
 
 // 404
 

@@ -31,6 +31,11 @@
         <div id="winner-container">
             <div class="info">
                 <h2 id="winner-info">siema</h1>
+                <div id="saving-score">
+                    <input type="text" name="nick" id="nick-input" placeholder="Anonymous">
+                    <input type="button" id="score-button" value="Zapisz wynik!">
+                </div>
+                <br>
                 <button onClick="window.location.reload();">Play again!</button>
             </div>
         </div>
@@ -38,100 +43,5 @@
             <div id="root" style="width: 50vw; height: 49vh"></div>
             <div id="root2" style="width: 50vw; height: 49vh"></div>
         </div>
-        <!-- <script>
-            // Tworze obiekt socket (łącze się z serverem)
-            var socket = io('ws://localhost:3000', {
-                transports: ['websocket'],
-            });
-            // Event po udanym połączeniu z serverem
-            socket.on('connect', () => {
-                console.log('WS connected...');
-            });
-            // Event po pierwszym połączeniu. Dane w formacie:
-            // {id: "123123123", playerCount: 1}
-            socket.on('ID', (data) => {
-                console.log('Got new player id: ' + data.id);
-                console.log('Current players: ' + data.playerCount);
-
-                // ID zapisuje w localStorage aby móć odowłać się do niego w każdym miejscu
-                localStorage.setItem('id', data.id);
-            });
-            // Event gdy próbuje dołączyć jako 3+ gracz lub gra się już zaczeła
-            socket.on('ERROR', (data) => {
-                console.log(data.message);
-            });
-            // Event informacje o stanie gry w formacie:
-            // {message: "Game starting in 5 seconds..."}
-            socket.on('INFO', (data) => {
-                console.log(data.message);
-            });
-            // Event gdy gracz się ruszy (przeciwnik lub ty) w formacie:
-            // {
-            //     id: "123123123",  - id gracza który się ruszył (ty lub przeciwnik)
-            //     table: [          - jego plansza (już po wykonanym ruchu)
-            //     [0, 2, 0, 0],
-            //     [0, 0, 0, 0],
-            //     [0, 4, 2, 0],
-            //     [0, 0, 0, 0]
-            // ]}
-            socket.on('TABLE_UPDATE', (data) => {
-                let player1 = document.getElementById('player1');
-                let player2 = document.getElementById('player2');
-
-                player1.innerHTML = '';
-                player2.innerHTML = '';
-
-                let div1 = document.createElement('div');
-                let div2 = document.createElement('div');
-
-                div1.innerHTML = `${localStorage.getItem('id') == data[0].id ? '(YOU)' : ''}`;
-                div2.innerHTML = `${localStorage.getItem('id') == data[1].id ? '(YOU)' : ''}`;
-
-                player1.insertBefore(div1, null);
-                player2.insertBefore(div2, null);
-
-                for (let j = 0; j < 4; j++) {
-                    let row = document.createElement('tr');
-                    for (let l = 0; l < 4; l++) {
-                        cell = document.createElement('td');
-                        cell.innerHTML = data[0].table[j][l];
-                        row.appendChild(cell);
-                    }
-                    player1.appendChild(row);
-                }
-
-                for (let j = 0; j < 4; j++) {
-                    let row = document.createElement('tr');
-                    for (let l = 0; l < 4; l++) {
-                        cell = document.createElement('td');
-                        cell.innerHTML = data[1].table[j][l];
-                        row.appendChild(cell);
-                    }
-                    player2.appendChild(row);
-                }
-            });
-            // Event czasu (co sekunde server wysyła info ile zostało czasu)
-            // w tym przypadku data to po prostu czas w sekundach (do końca gry)
-            socket.on('TIME_UPDATE', (data) => {
-                console.log(data);
-            });
-            // Event po zakończeniu gry - czas się skończył (lub ktoś przegrał). Narazie format:
-            // {message: "Time is up! Winner: " + PLAYERS[0].id + " with max number: " + max0}
-            socket.on('WINNER', (data) => {
-                console.log(data.message);
-            });
-            // Event który TY wywołujesz jak wykonujesz ruch
-            // Wysyłasz objekt w formacie:
-            // {id: "twoje_id_z_local_storage", direction: "up"}
-            // Kierunki: "up"/ "down" / "right" / "left"
-            const move = (direction) => {
-                socket.emit('MOVE', { id: localStorage.getItem('id'), direction: direction });
-            };
-            // To czyści localStorage jak np. gracz wyłączy przeglądarkę
-            socket.on('disconnect', () => {
-                console.log('WS disconnected...');
-                localStorage.clear();
-            });
-        </script> -->
     </body>
 </html>

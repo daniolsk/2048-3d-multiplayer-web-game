@@ -29,6 +29,9 @@ async function init() {
     let gameStatusElement = document.getElementById("game-status");
     let playerCountContainerElement = document.getElementById("player-count-container");
 
+    let savingScoreElement = document.getElementById("saving-score");
+    let btnEl = document.getElementById("score-button");
+
     let timeElement = document.getElementById("time");
 
     let winnerContainer = document.getElementById("winner-container");
@@ -68,11 +71,6 @@ async function init() {
         }
     });
     socket.on('TABLE_UPDATE', (data) => {
-
-
-        // NWM JAK ZMIENIĆ SCORE NA STRONIE
-        console.log(data[0].score, data[1].score);
-
         data.forEach(player => {
             if (player.id == localStorage.getItem("id")) {
                 fillCubeInfo(0, player.table);
@@ -94,6 +92,7 @@ async function init() {
         } else if (!data.winnerId) {
             winnerInfoElement.innerHTML = "DRAW! Your score: " + data.score;
         } else {
+            savingScoreElement.style.display = "none";
             winnerInfoElement.innerHTML = "YOU LOST!";
         }
 
@@ -116,10 +115,26 @@ async function init() {
     // let oldCubesInfo = []
     let cubes = [[], []]
 
-    let score1 = 0
+    let score1 = 0;
     let scoreText1;
-    let score2 = 0
+    let score2 = 0;
     let scoreText2;
+
+    btnEl.addEventListener("click", (e) => {
+        let nick = document.getElementById("nick-input").value;
+
+        fetch("/api/saveScore", {
+            method: 'POST',
+            mode: 'same-origin',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'},
+            body: JSON.stringify({nick: nick, score: score1})
+        }).then((response) => response.json()).then(data => {
+            console.log(data);
+            window.location = '/leaderboard';
+        })
+    })
 
     const container = document.getElementById('root');
     const container2 = document.getElementById('root2');
