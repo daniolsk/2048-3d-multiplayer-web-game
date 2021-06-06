@@ -32,20 +32,26 @@ const generate = (tableToModify) => {
     }
 } 
 
-const combineRow = (row) => {
+const combineRow = (row, player) => {
     for (let i=0; i<3; i++){
         if (row[i] == row[i+1]){
             let combinedTotal = row[i] + row[i+1];
+
+            player.score += combinedTotal;
+
             row[i] = combinedTotal;
             row[i+1] = 0;
         }
     }
 }
 
-const combineCol = (col) => {
+const combineCol = (col, player) => {
     for (let i=0; i<3; i++){
         if (col[i] == col[i+1]){
             let combinedTotal = col[i] + col[i+1];
+
+            player.score += combinedTotal;
+
             col[i] = combinedTotal;
             col[i+1] = 0;
         }
@@ -110,13 +116,13 @@ const moveUp = (table, column, i) => {
     column[3] = newColumn[3];
 }
 
-const move = (direction, table) => {
+const move = (direction, table, player) => {
     if (direction == "right"){
         for (let i=0; i<4; i++){
             let row = table[i];
 
             moveRight(row);
-            combineRow(row);
+            combineRow(row, player);
             moveRight(row);
         }
     } else if (direction == "left"){
@@ -124,7 +130,7 @@ const move = (direction, table) => {
             let row = table[i];
 
             moveLeft(row);
-            combineRow(row);
+            combineRow(row, player);
             moveLeft(row);
         }
     } else if (direction == "down"){
@@ -137,7 +143,7 @@ const move = (direction, table) => {
             let column = [totalOne, totalTwo, totalThree, totalFour];
 
             moveDown(table, column, i);
-            combineCol(column);
+            combineCol(column, player);
             moveDown(table, column, i);
         }
     } else if (direction == "up"){
@@ -150,7 +156,7 @@ const move = (direction, table) => {
             let column = [totalOne, totalTwo, totalThree, totalFour];
 
             moveUp(table, column, i);
-            combineCol(column);
+            combineCol(column, player);
             moveUp(table, column, i);
         }
     }
@@ -208,17 +214,20 @@ io.on('connection', client => {
                         GAME_STARTED = false;
                         clearInterval(TIME_INTERVAL);
 
-                        let max0 = Math.max(...PLAYERS[0].table[0], ...PLAYERS[0].table[1], ...PLAYERS[0].table[2], ...PLAYERS[0].table[3]);
-                        let max1 = Math.max(...PLAYERS[1].table[0], ...PLAYERS[1].table[1], ...PLAYERS[1].table[2], ...PLAYERS[1].table[3]);
+                        // let max0 = Math.max(...PLAYERS[0].table[0], ...PLAYERS[0].table[1], ...PLAYERS[0].table[2], ...PLAYERS[0].table[3]);
+                        // let max1 = Math.max(...PLAYERS[1].table[0], ...PLAYERS[1].table[1], ...PLAYERS[1].table[2], ...PLAYERS[1].table[3]);
 
-                        console.log(max0, max1);
+                        let score0 = PLAYERS[0].score;
+                        let score1 = PLAYERS[1].score;
+
+                        console.log(score0, score1);
                         
-                        if (max0 > max1){
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with max number: " + max0, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
-                        } else if (max1 > max0) {
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with max number: " + max1, winnerId: PLAYERS[1].id, score: PLAYERS[1].score});
+                        if (score0 > score1){
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with score: " + score0, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
+                        } else if (score1 > score0) {
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with score: " + score1, winnerId: PLAYERS[1].id, score: PLAYERS[1].score});
                         } else {
-                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Max number was: " + max0, winnerId: null, score: PLAYERS[1].score});
+                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Score was " + score0, winnerId: null, score: PLAYERS[1].score});
                         }
 
                         TIME = 30;
@@ -236,7 +245,7 @@ io.on('connection', client => {
             let playerToMove = PLAYERS.find((player) => (player.id == data.id));
             let otherPlayer = PLAYERS.filter((player) => (player.id != playerToMove.id));
 
-            move(data.direction, playerToMove.table);
+            move(data.direction, playerToMove.table, playerToMove);
             generate(playerToMove.table);
 
             io.sockets.emit("TABLE_UPDATE", PLAYERS);

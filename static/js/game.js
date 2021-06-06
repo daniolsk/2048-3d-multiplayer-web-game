@@ -49,8 +49,6 @@ async function init() {
         localStorage.setItem('id', data.id);
     });
     socket.on('ERROR', (data) => {
-        console.log(data.message);
-
         gameStatusElement.innerHTML = data.message;
         playerCountContainerElement.style.display = "none";
     });
@@ -69,6 +67,11 @@ async function init() {
         }
     });
     socket.on('TABLE_UPDATE', (data) => {
+
+
+        // NWM JAK ZMIENIĆ SCORE NA STRONIE
+        console.log(data[0].score, data[1].score);
+
         data.forEach(player => {
             if (player.id == localStorage.getItem("id")) {
                 fillCubeInfo(0, player.table);
@@ -78,21 +81,18 @@ async function init() {
         })
     });
     socket.on('TIME_UPDATE', (data) => {
-        console.log(data);
-
         timeElement.style.display = "flex";
         timeElement.innerHTML = data;
     });
     socket.on('WINNER', (data) => {
         console.log(data);
-
         if (data.winnerId == localStorage.getItem("id")){
-            winnerInfoElement.innerHTML = "YOU WON!"
+            winnerInfoElement.innerHTML = "YOU WON! Your score: " + data.score;
+        } else if (!data.winnerId) {
+            winnerInfoElement.innerHTML = "DRAW! Your score: " + data.score;
         } else {
-            winnerInfoElement.innerHTML = "YOU LOST!"
+            winnerInfoElement.innerHTML = "YOU LOST!";
         }
-
-        console.log(data.winnerId, localStorage.getItem("id"))
 
         winnerContainer.style.display = "flex";
 
