@@ -1,3 +1,4 @@
-1. Baza danych (tablica wyników)
-2. Klasy +  webpack + dziedziczenie
-4. Model 3D (Plansza)
+1. Klasy +  webpack + dziedziczenie
+2. Model 3D (Plansza)
+
+3. Score fix w html
