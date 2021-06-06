@@ -1,8 +1,19 @@
 const express = require('express');
 const app = express();
 
+const mongoose = require('mongoose');
+// zaq1@WSX
+
 const { clearInterval } = require('timers');
 const { v4: uuidv4 } = require('uuid');
+
+const { saveScore, getBestScores } = require('./dbOperations');
+
+mongoose
+    .connect("mongodb+srv://daniel:daniel333@2048.80jwz.mongodb.net/2048?retryWrites=true&w=majority",
+     { useUnifiedTopology: true , useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true })
+    .then(() => console.log('Connected to MongoDB...'))
+    .catch(err => console.error(err));
 
 // WEBSOCKETS
 const server = require('http').createServer(app);
@@ -19,6 +30,7 @@ let STARTING_TIMEOUT = null;
 let TIME_INTERVAL = null;
 
 app.use(express.static("static"));
+app.use(express.json());
 
 const generate = (tableToModify) => {
     while(true){
@@ -32,20 +44,26 @@ const generate = (tableToModify) => {
     }
 } 
 
-const combineRow = (row) => {
+const combineRow = (row, player) => {
     for (let i=0; i<3; i++){
         if (row[i] == row[i+1]){
             let combinedTotal = row[i] + row[i+1];
+
+            player.score += combinedTotal;
+
             row[i] = combinedTotal;
             row[i+1] = 0;
         }
     }
 }
 
-const combineCol = (col) => {
+const combineCol = (col, player) => {
     for (let i=0; i<3; i++){
         if (col[i] == col[i+1]){
             let combinedTotal = col[i] + col[i+1];
+
+            player.score += combinedTotal;
+
             col[i] = combinedTotal;
             col[i+1] = 0;
         }
@@ -110,13 +128,13 @@ const moveUp = (table, column, i) => {
     column[3] = newColumn[3];
 }
 
-const move = (direction, table) => {
+const move = (direction, table, player) => {
     if (direction == "right"){
         for (let i=0; i<4; i++){
             let row = table[i];
 
             moveRight(row);
-            combineRow(row);
+            combineRow(row, player);
             moveRight(row);
         }
     } else if (direction == "left"){
@@ -124,7 +142,7 @@ const move = (direction, table) => {
             let row = table[i];
 
             moveLeft(row);
-            combineRow(row);
+            combineRow(row, player);
             moveLeft(row);
         }
     } else if (direction == "down"){
@@ -137,7 +155,7 @@ const move = (direction, table) => {
             let column = [totalOne, totalTwo, totalThree, totalFour];
 
             moveDown(table, column, i);
-            combineCol(column);
+            combineCol(column, player);
             moveDown(table, column, i);
         }
     } else if (direction == "up"){
@@ -150,7 +168,7 @@ const move = (direction, table) => {
             let column = [totalOne, totalTwo, totalThree, totalFour];
 
             moveUp(table, column, i);
-            combineCol(column);
+            combineCol(column, player);
             moveUp(table, column, i);
         }
     }
@@ -171,6 +189,7 @@ io.on('connection', client => {
         ]});
 
         console.log("Client connected... Current players: " + PLAYER_COUNT);
+        io.sockets.emit("INFO", {playerCount: PLAYER_COUNT});
 
         if (PLAYER_COUNT == 2){
             GAME_STARTING = true;
@@ -181,6 +200,17 @@ io.on('connection', client => {
                 STARTING_TIMEOUT = null;
                 GAME_STARTING = false;
                 GAME_STARTED = true;
+
+                PLAYERS.forEach(player => {
+                    player.table = [
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0]
+                    ];
+                    player.score = 0;
+                })
+
                 io.sockets.emit("INFO", {message: "Game started..."});
                     
                 for (let i=0; i<PLAYERS.length; i++){
@@ -196,18 +226,23 @@ io.on('connection', client => {
                         GAME_STARTED = false;
                         clearInterval(TIME_INTERVAL);
 
-                        let max0 = Math.max(...PLAYERS[0].table[0], ...PLAYERS[0].table[1], ...PLAYERS[0].table[2], ...PLAYERS[0].table[3]);
-                        let max1 = Math.max(...PLAYERS[1].table[0], ...PLAYERS[1].table[1], ...PLAYERS[1].table[2], ...PLAYERS[1].table[3]);
+                        // let max0 = Math.max(...PLAYERS[0].table[0], ...PLAYERS[0].table[1], ...PLAYERS[0].table[2], ...PLAYERS[0].table[3]);
+                        // let max1 = Math.max(...PLAYERS[1].table[0], ...PLAYERS[1].table[1], ...PLAYERS[1].table[2], ...PLAYERS[1].table[3]);
 
-                        console.log(max0, max1);
+                        let score0 = PLAYERS[0].score;
+                        let score1 = PLAYERS[1].score;
+
+                        console.log(score0, score1);
                         
-                        if (max0 > max1){
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with max number: " + max0});
-                        } else if (max1 > max0) {
-                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with max number: " + max1});
+                        if (score0 > score1){
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[0].id + " with score: " + score0, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
+                        } else if (score1 > score0) {
+                            io.sockets.emit("WINNER", {message: "Time is up! Winner: " + PLAYERS[1].id + " with score: " + score1, winnerId: PLAYERS[1].id, score: PLAYERS[1].score});
                         } else {
-                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Max number was: " + max0});
+                            io.sockets.emit("WINNER", {message: "Time is up! DRAW! Score was " + score0, winnerId: null, score: PLAYERS[1].score});
                         }
+
+                        TIME = 30;
                     }
                 }, 1000);
 
@@ -219,9 +254,10 @@ io.on('connection', client => {
 
     client.on("MOVE", (data) => {
         if (GAME_STARTED){
-            playerToMove = PLAYERS.find((player) => (player.id == data.id));
+            let playerToMove = PLAYERS.find((player) => (player.id == data.id));
+            let otherPlayer = PLAYERS.filter((player) => (player.id != playerToMove.id));
 
-            move(data.direction, playerToMove.table);
+            move(data.direction, playerToMove.table, playerToMove);
             generate(playerToMove.table);
 
             io.sockets.emit("TABLE_UPDATE", PLAYERS);
@@ -235,7 +271,7 @@ io.on('connection', client => {
 
                 TIME = 30;
 
-                io.sockets.emit("WINNER", {message: `Player: ${playerToMove.id} has lost!`});
+                io.sockets.emit("WINNER", {message: "Player " + playerToMove.id + " has lost!", winnerId: otherPlayer[0].id, score: otherPlayer[0].score});
             }
         }
     })
@@ -247,11 +283,13 @@ io.on('connection', client => {
             });
 
             if (GAME_STARTED || GAME_STARTING){
-                io.sockets.emit("INFO", {message: "Player disconnected! Winner: " + PLAYERS[0].id});
+                clearInterval(TIME_INTERVAL);
+                io.sockets.emit("WINNER", {message: "Player disconnected! Winner: " + PLAYERS[0].id, winnerId: PLAYERS[0].id, score: PLAYERS[0].score});
                 if (STARTING_TIMEOUT){
                     clearTimeout(STARTING_TIMEOUT);
                     clearInterval(TIME_INTERVAL);
                     io.sockets.emit("INFO", {message: "Game starting aborted..."});
+                    io.sockets.emit("INFO", {playerCount: PLAYER_COUNT-1});
                 }
                 GAME_STARTED = false;
                 GAME_STARTING = false;
@@ -268,6 +306,23 @@ io.on('connection', client => {
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/static/index.html");
 });
+
+// score
+app.post('/api/saveScore', (req, res) => {
+    console.log(req.body);
+
+    saveScore(req.body, res);
+
+    // res.send(JSON.stringify({message: "Score saved!"}));
+});
+app.get("/api/leaderboard", (req, res) => {
+    getBestScores(res);
+
+    // res.send(JSON.stringify({message: "ok"}));
+})
+app.get("/leaderboard", (req, res) => {
+    res.sendFile(__dirname + "/static/leaderboard.html");
+})
 
 // 404
 

@@ -1,0 +1,31 @@
+* {
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    background-color: #d98880;
+    color: white;
+}
+
+table,
+td,
+th {
+    border: 1px solid black;
+    padding: 15px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+button {
+    font-size: 1.2em;
+    padding: 5px 15px;
+}

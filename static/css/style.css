@@ -1,0 +1,112 @@
+* {
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+#container {
+    display: flex;
+    flex-direction: row;
+}
+
+#info-container {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: rgba(186, 186, 186, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#winner-container {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: rgba(186, 186, 186, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.info {
+    width: 60vw;
+    height: 60vh;
+    background-color: #d98880;
+    -webkit-box-shadow: 0px 10px 13px -7px #000000, 5px 5px 6px 5px rgba(0, 0, 0, 0);
+    box-shadow: 0px 10px 13px -7px #000000, 5px 5px 6px 5px rgba(0, 0, 0, 0);
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+}
+
+.info h2 {
+    font-size: 3.5em;
+    text-align: center;
+}
+
+.info h3 {
+    font-size: 2.5em;
+    text-align: center;
+}
+.info h4 {
+    font-size: 2em;
+    text-align: center;
+}
+
+#time {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    top: 20px;
+    padding: 5px 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 3.5em;
+    display: none;
+}
+
+#score-left {
+    position: absolute;
+    left: 25%;
+    transform: translate(-50%, 0);
+    top: 20px;
+    padding: 5px 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 3.5em;
+    display: none;
+}
+
+#score-right {
+    position: absolute;
+    left: 75%;
+    transform: translate(-50%, 0);
+    top: 20px;
+    padding: 5px 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 3.5em;
+    display: none;
+}

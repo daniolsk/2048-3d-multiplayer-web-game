@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/css/style-lederboard.css" />
+        <title>2048 - leaderboard</title>
+    </head>
+    <body>
+        <table id="leaderboard">
+            <tr>
+                <th>Nick</th>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+        </table>
+        <button onClick="window.location.href = '/'">Play again!</button>
+        <script>
+            let tableEl = document.getElementById('leaderboard');
+
+            fetch('/api/leaderboard', {
+                method: 'GET',
+                mode: 'same-origin',
+                credentials: 'same-origin',
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    data.scores.forEach((score) => {
+                        let row = document.createElement('tr');
+
+                        let tdEL = document.createElement('td');
+                        tdEL.innerHTML = score.nick;
+                        row.appendChild(tdEL);
+
+                        tdEL = document.createElement('td');
+                        tdEL.innerHTML = score.score;
+                        row.appendChild(tdEL);
+
+                        tdEL = document.createElement('td');
+                        tdEL.innerHTML =
+                            new Date(score.date).toLocaleDateString() +
+                            ' - ' +
+                            new Date(score.date).toLocaleTimeString();
+                        row.appendChild(tdEL);
+
+                        tableEl.appendChild(row);
+                    });
+                });
+        </script>
+    </body>
+</html>
