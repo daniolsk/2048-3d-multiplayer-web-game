@@ -78,3 +78,35 @@ body {
     font-size: 3.5em;
     display: none;
 }
+
+#score-left {
+    position: absolute;
+    left: 25%;
+    transform: translate(-50%, 0);
+    top: 20px;
+    padding: 5px 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 3.5em;
+    display: none;
+}
+
+#score-right {
+    position: absolute;
+    left: 75%;
+    transform: translate(-50%, 0);
+    top: 20px;
+    padding: 5px 25px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 3.5em;
+    display: none;
+}
