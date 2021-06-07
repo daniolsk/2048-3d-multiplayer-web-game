@@ -25,7 +25,8 @@ async function init() {
     ]
 
     const modelsTab = [
-        '/model/board.dae'
+        '/model/boardPlayer.dae',
+        '/model/boardOpponent.dae'
     ]
 
     const textureLoader = new THREE.TextureLoader()
@@ -91,9 +92,9 @@ async function init() {
     const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
     const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
 
-    createBoard(scene1, "YOU", 0xbbada0)
-    createBoard(scene2, "OPONENT", 0xD98880)
-    function createBoard(sceneBoard, player, borderColor) {
+    createBoard(scene1, "YOU", 0xbbada0, 0xcac0b4)
+    createBoard(scene2, "OPPONENT", 0xD98880, 0xF8BFB9)
+    function createBoard(sceneBoard, player, borderColor, planeColor, modelBoard) {
 
         const textMesh = new THREE.TextGeometry(player, {
             font: fonts['fonts/helvetiker_regular.typeface.json'],
@@ -106,14 +107,23 @@ async function init() {
             bevelOffset: 0,
             bevelSegments: 5
         });
-        
         const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
         const playerName = new THREE.Mesh(textMesh, materialText)
         playerName.rotateY((Math.PI * 0.5))
-        playerName.position.set(0, 250, 230)
+
+        let model;
+
+        if(player == "YOU")
+        {
+            playerName.position.set(0, 250, 40)
+            model = models['/model/boardPlayer.dae'].clone()
+        }
+        else{
+            playerName.position.set(0, 250, 105)
+            model = models['/model/boardOpponent.dae'].clone()
+        }
         sceneBoard.add(playerName)
 
-        const model = models['/model/board.dae'].clone()
         const material = new THREE.MeshPhongMaterial({
             color: borderColor,
             specular: 0xffffff,
@@ -129,8 +139,21 @@ async function init() {
 
         sceneBoard.add(model);
 
+        const materialPlane = new THREE.MeshPhongMaterial({
+            color: planeColor,
+            specular: 0xffffff,
+            shininess: 50,
+            side: THREE.DoubleSide,
+        })
+        const planeMesh = new THREE.PlaneGeometry( 400, 400 );
+        const plane = new THREE.Mesh(planeMesh, materialPlane)
+        plane.rotateY((Math.PI * 0.5))
+        plane.position.set(-26, 0, 0)
+        sceneBoard.add(plane)
+
+
         const gridHelper = new THREE.GridHelper(399, 4)
-        gridHelper.position.set(-23, 0, 0)
+        gridHelper.position.set(-20, 0, 0)
         gridHelper.geometry.rotateX((Math.PI * 0.5))
         gridHelper.geometry.rotateY((Math.PI * 0.5))
 
