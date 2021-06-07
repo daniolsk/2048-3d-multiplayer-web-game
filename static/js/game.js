@@ -62,11 +62,11 @@ async function init() {
 
 
 
-    renderer1.setClearColor(0xfbf8ef);
+    renderer1.setClearColor(0xE1E1E1);
 
     renderer1.setSize(window.innerWidth / 2, window.innerHeight)
 
-    renderer2.setClearColor(0xF5B7B1);
+    renderer2.setClearColor(0xF9A197);
 
     renderer2.setSize(window.innerWidth / 2, window.innerHeight)
 
@@ -92,8 +92,8 @@ async function init() {
     const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
     const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
 
-    createBoard(scene1, "YOU", 0xbbada0, 0xcac0b4)
-    createBoard(scene2, "OPPONENT", 0xD98880, 0xF8BFB9)
+    createBoard(scene1, "YOU", 0x808080, 0xBDBDBD)
+    createBoard(scene2, "OPPONENT", 0xB24134, 0xDD6558)
     function createBoard(sceneBoard, player, borderColor, planeColor, modelBoard) {
 
         const textMesh = new THREE.TextGeometry(player, {
@@ -113,12 +113,11 @@ async function init() {
 
         let model;
 
-        if(player == "YOU")
-        {
+        if (player == "YOU") {
             playerName.position.set(0, 250, 40)
             model = models['/model/boardPlayer.dae'].clone()
         }
-        else{
+        else {
             playerName.position.set(0, 250, 105)
             model = models['/model/boardOpponent.dae'].clone()
         }
@@ -145,7 +144,7 @@ async function init() {
             shininess: 50,
             side: THREE.DoubleSide,
         })
-        const planeMesh = new THREE.PlaneGeometry( 400, 400 );
+        const planeMesh = new THREE.PlaneGeometry(400, 400);
         const plane = new THREE.Mesh(planeMesh, materialPlane)
         plane.rotateY((Math.PI * 0.5))
         plane.position.set(-26, 0, 0)
