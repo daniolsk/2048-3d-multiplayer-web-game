@@ -178,7 +178,7 @@ async function init() {
     let scoreLeft = document.getElementById("score-left");
     let scoreRight = document.getElementById("score-right");
 
-    socket = io('ws://localhost:3000', {
+    socket = io(`ws://localhost:${PORT}`, {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
@@ -199,8 +199,6 @@ async function init() {
     });
     socket.on('INFO', (data) => {
         if (data.message) {
-            console.log(data.message)
-
             if (data.message == "Game started...") {
                 scoreLeft.style.display = "block";
                 scoreRight.style.display = "block";
@@ -237,8 +235,10 @@ async function init() {
         } else if (!data.winnerId) {
             winnerInfoElement.innerHTML = "DRAW! Your score: " + data.score;
         } else {
-            savingScoreElement.style.display = "none";
-            winnerInfoElement.innerHTML = "YOU LOST!";
+            if (data.message == "Player " + localStorage.getItem("id") + " has lost!"){
+                savingScoreElement.style.display = "none";
+            }
+            winnerInfoElement.innerHTML = "YOU LOST! Your score: " + score1;
         }
 
         winnerContainer.style.display = "flex";

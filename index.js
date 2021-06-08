@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const express = require('express');
 const app = express();
 
@@ -5,7 +7,6 @@ const mongoose = require('mongoose');
 // zaq1@WSX
 
 const { clearInterval } = require('timers');
-const { v4: uuidv4 } = require('uuid');
 
 const { saveScore, getBestScores } = require('./dbOperations');
 
@@ -20,6 +21,13 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
 const PORT = process.env.PORT || 3000;
+
+fs.writeFile('./static/js/config.js', `const PORT = ${PORT};`, err => {
+  if (err) {
+    console.error(err)
+    return
+  }
+})
 
 let GAME_STARTED = false;
 let GAME_STARTING = false;
