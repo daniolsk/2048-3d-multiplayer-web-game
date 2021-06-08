@@ -178,7 +178,14 @@ async function init() {
     let scoreLeft = document.getElementById("score-left");
     let scoreRight = document.getElementById("score-right");
 
-    socket = io(`ws://localhost:${PORT}`, {
+    let siteUrl;
+    if (HEROKU_URL){
+        siteUrl = HEROKU_URL;
+    } else {
+        siteUrl = "localhost";
+    }
+
+    socket = io(`ws://${siteUrl}:${PORT}`, {
         transports: ['websocket'],
     });
     socket.on('connect', () => {

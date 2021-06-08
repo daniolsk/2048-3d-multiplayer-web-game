@@ -12,7 +12,7 @@ const { clearInterval } = require('timers');
 const { saveScore, getBestScores } = require('./dbOperations');
 
 mongoose
-    .connect(process.env.DB_URL,
+    .connect("mongodb+srv://daniel:daniel333@2048.80jwz.mongodb.net/2048?retryWrites=true&w=majority",
      { useUnifiedTopology: true , useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true })
     .then(() => console.log('Connected to MongoDB...'))
     .catch(err => console.error(err));
@@ -23,7 +23,9 @@ const io = require('socket.io')(server);
 
 const PORT = process.env.PORT || 3000;
 
-fs.writeFile('./static/js/config.js', `const PORT = ${PORT};`, err => {
+const HEROKU_ULR = process.env.HEROKU_URL || null;
+
+fs.writeFile('./static/js/config.js', `const PORT = ${PORT}; const HEROKU_URL = ${HEROKU_ULR ? HEROKU_ULR : null}`, err => {
   if (err) {
     console.error(err)
     return
