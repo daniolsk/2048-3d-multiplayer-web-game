@@ -1,1 +1,1 @@
-const PORT = 3000; const HEROKU_URL = 'siema';
+const PORT = 3000; const HEROKU_URL = null;

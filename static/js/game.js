@@ -179,13 +179,21 @@ async function init() {
     let scoreRight = document.getElementById("score-right");
 
     let siteUrl;
+    let saveConWss;
+
     if (HEROKU_URL){
         siteUrl = HEROKU_URL;
     } else {
         siteUrl = "localhost";
     }
 
-    socket = io(`ws://${siteUrl}:${PORT}`, {
+    if (siteUrl != "localhost"){
+        saveConWss = "wss";
+    } else [
+        saveConWss = "ws"
+    ]
+
+    socket = io(`${saveConWss}://${siteUrl}:${PORT}`, {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
