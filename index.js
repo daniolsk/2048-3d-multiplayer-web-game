@@ -1,6 +1,4 @@
-const fs = require('fs')
-
-require('dotenv').config();
+const fs = require('fs');
 
 const express = require('express');
 const app = express();
@@ -25,7 +23,7 @@ const PORT = process.env.PORT || 3000;
 
 const HEROKU_ULR = process.env.HEROKU_URL || null;
 
-fs.writeFile('./static/js/config.js', `const PORT = ${PORT}; const HEROKU_URL = ${HEROKU_ULR ? HEROKU_ULR : null}`, err => {
+fs.writeFile('./static/js/config.js', `const PORT = ${PORT}; const HEROKU_URL = ${HEROKU_ULR ? HEROKU_ULR : null};`, err => {
   if (err) {
     console.error(err)
     return
