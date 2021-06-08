@@ -1,17 +1,18 @@
 const fs = require('fs')
 
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 
 const mongoose = require('mongoose');
-// zaq1@WSX
 
 const { clearInterval } = require('timers');
 
 const { saveScore, getBestScores } = require('./dbOperations');
 
 mongoose
-    .connect("mongodb+srv://daniel:daniel333@2048.80jwz.mongodb.net/2048?retryWrites=true&w=majority",
+    .connect(process.env.DB_URL,
      { useUnifiedTopology: true , useFindAndModify: false, useNewUrlParser: true, useCreateIndex: true })
     .then(() => console.log('Connected to MongoDB...'))
     .catch(err => console.error(err));
