@@ -193,7 +193,7 @@ async function init() {
         saveConWss = "ws"
     ]
 
-    socket = io(`${saveConWss}://${siteUrl}:${PORT}`, {
+    socket = io(`${saveConWss}://${siteUrl}${siteUrl != "localhost" ? "" : `:${PORT}`}`, {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
