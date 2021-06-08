@@ -244,8 +244,10 @@ async function init() {
         } else {
             if (data.message == "Player " + localStorage.getItem("id") + " has lost!"){
                 savingScoreElement.style.display = "none";
+                winnerInfoElement.innerHTML = "YOU LOST!";
+            } else {
+                winnerInfoElement.innerHTML = "YOU LOST! Your score: " + score1;
             }
-            winnerInfoElement.innerHTML = "YOU LOST! Your score: " + score1;
         }
 
         winnerContainer.style.display = "flex";
