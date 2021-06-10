@@ -318,7 +318,6 @@ app.get('/', (req, res) => {
 
 // score
 app.post('/api/saveScore', (req, res) => {
-    console.log(req.body);
 
     saveScore(req.body, res);
 

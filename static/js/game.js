@@ -31,7 +31,7 @@ async function init() {
 
     const textureLoader = new THREE.TextureLoader()
     for (const texturePath of texturesTab) {
-        const texture = await textureLoader.loadAsync(texturePath)
+        const texture = await textureLoader.loadAsync(texturePath);
         textures[texturePath] = texture
     }
 
@@ -47,6 +47,8 @@ async function init() {
         models[modelPath] = model
     }
 
+    document.getElementById("model_loading").style.display = "none";
+
     const container = document.getElementById('root');
     const container2 = document.getElementById('root2');
 
@@ -58,9 +60,6 @@ async function init() {
 
     var renderer1 = new THREE.WebGLRenderer();
     var renderer2 = new THREE.WebGLRenderer();
-
-
-
 
     renderer1.setClearColor(0xE1E1E1);
 
