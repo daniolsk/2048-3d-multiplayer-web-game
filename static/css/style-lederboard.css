@@ -15,6 +15,26 @@ body {
     color: white;
 }
 
+button,
+input[type='button'] {
+    background-color: rgba(0, 0, 0, 0);
+    border-radius: 15px;
+    border: 1px solid black;
+    padding: 5px 15px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+button:hover,
+input[type='button']:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    border: 1px solid black;
+    padding: 5px 15px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
 table,
 td,
 th {
@@ -23,9 +43,4 @@ th {
     margin-top: 30px;
     margin-bottom: 30px;
     font-size: 1.1em;
-}
-
-button {
-    font-size: 1.2em;
-    padding: 5px 15px;
 }
