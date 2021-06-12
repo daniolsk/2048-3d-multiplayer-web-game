@@ -1,9 +1,10 @@
 const textures = {}
+const fonts = {}
+const models = {}
 
 let socket;
 
 async function init() {
-
 
     const texturesTab = [
         "/gfx/2.png",
@@ -18,11 +19,78 @@ async function init() {
         "/gfx/1024.png",
         "/gfx/2048.png",
     ]
+
+    const fontsTab = [
+        'fonts/helvetiker_regular.typeface.json'
+    ]
+
+    const modelsTab = [
+        '/model/boardPlayer.dae',
+        '/model/boardOpponent.dae'
+    ]
+
     const textureLoader = new THREE.TextureLoader()
     for (const texturePath of texturesTab) {
-        const texture = await textureLoader.loadAsync(texturePath)
+        const texture = await textureLoader.loadAsync(texturePath);
         textures[texturePath] = texture
     }
+
+    const fontLoader = new THREE.FontLoader();
+    for (const fontPath of fontsTab) {
+        const font = await fontLoader.loadAsync(fontPath)
+        fonts[fontPath] = font
+    }
+
+    const loaderModel = new THREE.ColladaLoader();
+    for (const modelPath of modelsTab) {
+        const model = (await loaderModel.loadAsync(modelPath)).scene
+        models[modelPath] = model
+    }
+
+    document.getElementById("model_loading").style.display = "none";
+
+    const container = document.getElementById('root');
+    const container2 = document.getElementById('root2');
+
+    var scene1 = new Scene();
+    var scene2 = new Scene();
+
+    var renderer1 = new Renderer(scene1, container, 0xE1E1E1);
+    var renderer2 = new Renderer(scene2, container2, 0xF9A197);
+
+    var camera1 = new Camera()
+    var camera2 = new Camera()
+
+
+    const light1 = new AmbientLight(scene1);
+    const light2 = new AmbientLight(scene2);
+
+    const directionalLight = new DirectionalLight(scene1);
+    const directionalLight2 = new DirectionalLight(scene2);
+
+
+    const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
+    const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
+
+    createBoard(scene1, "YOU", 0x808080, 0xBDBDBD)
+    createBoard(scene2, "OPPONENT", 0xB24134, 0xDD6558)
+    function createBoard(sceneBoard, player, borderColor, planeColor) {
+
+        const text = new TextGeometry(sceneBoard, player, fonts['fonts/helvetiker_regular.typeface.json'])
+
+        if (player == "YOU") {
+            const boardModel = new BoardModel(sceneBoard, models['/model/boardPlayer.dae'].clone(), borderColor)
+        }
+        else {
+            const boardModel = new BoardModel(sceneBoard, models['/model/boardOpponent.dae'].clone(), borderColor)
+        }
+
+        const plane = new Plane(sceneBoard, planeColor)
+
+        const grid = new Grid(sceneBoard)
+    }
+
+    //websockety
 
     let infoContainerElement = document.getElementById("info-container");
     let playerCountElement = document.getElementById("player-count");
@@ -40,7 +108,22 @@ async function init() {
     let scoreLeft = document.getElementById("score-left");
     let scoreRight = document.getElementById("score-right");
 
-    socket = io('ws://localhost:3000', {
+    let siteUrl;
+    let saveConWss;
+
+    if (HEROKU_URL){
+        siteUrl = HEROKU_URL;
+    } else {
+        siteUrl = "localhost";
+    }
+
+    if (siteUrl != "localhost"){
+        saveConWss = "wss";
+    } else [
+        saveConWss = "ws"
+    ]
+
+    socket = io(`${saveConWss}://${siteUrl}${siteUrl != "localhost" ? "" : `:${PORT}`}`, {
         transports: ['websocket'],
     });
     socket.on('connect', () => {
@@ -61,8 +144,6 @@ async function init() {
     });
     socket.on('INFO', (data) => {
         if (data.message) {
-            console.log(data.message)
-
             if (data.message == "Game started...") {
                 scoreLeft.style.display = "block";
                 scoreRight.style.display = "block";
@@ -99,8 +180,12 @@ async function init() {
         } else if (!data.winnerId) {
             winnerInfoElement.innerHTML = "DRAW! Your score: " + data.score;
         } else {
-            savingScoreElement.style.display = "none";
-            winnerInfoElement.innerHTML = "YOU LOST!";
+            if (data.message == "Player " + localStorage.getItem("id") + " has lost!"){
+                savingScoreElement.style.display = "none";
+                winnerInfoElement.innerHTML = "YOU LOST!";
+            } else {
+                winnerInfoElement.innerHTML = "YOU LOST! Your score: " + score1;
+            }
         }
 
         winnerContainer.style.display = "flex";
@@ -128,67 +213,23 @@ async function init() {
     btnEl.addEventListener("click", (e) => {
         let nick = document.getElementById("nick-input").value;
 
-        fetch("/api/saveScore", {
-            method: 'POST',
-            mode: 'same-origin',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json'},
-            body: JSON.stringify({nick: nick, score: score1})
-        }).then((response) => response.json()).then(data => {
-            console.log(data);
-            window.location = '/leaderboard';
-        })
+        if (nick != ""){
+            fetch("/api/saveScore", {
+                method: 'POST',
+                mode: 'same-origin',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nick: nick, score: score1 })
+            }).then((response) => response.json()).then(data => {
+                console.log(data);
+                window.location = '/leaderboard';
+            })
+        } else {
+            alert("Please enter your nickname!");
+        }
     })
-
-    const container = document.getElementById('root');
-    const container2 = document.getElementById('root2');
-
-    var scene1 = new THREE.Scene();
-    var scene2 = new THREE.Scene();
-
-    var camera1 = new THREE.PerspectiveCamera(45, (window.innerWidth / 2) / window.innerHeight, 0.1, 10000)
-    var camera2 = new THREE.PerspectiveCamera(45, (window.innerWidth / 2) / window.innerHeight, 0.1, 10000)
-
-    var renderer1 = new THREE.WebGLRenderer();
-    var renderer2 = new THREE.WebGLRenderer();
-
-
-    const loader = new THREE.FontLoader();
-
-
-    renderer1.setClearColor(0xfbf8ef);
-
-    renderer1.setSize(window.innerWidth / 2, window.innerHeight)
-
-    renderer2.setClearColor(0xF5B7B1);
-
-    renderer2.setSize(window.innerWidth / 2, window.innerHeight)
-
-    var light1 = new THREE.AmbientLight(0xffffff, 1);
-    scene1.add(light1);
-    var light2 = new THREE.AmbientLight(0xffffff, 1);
-    scene2.add(light2);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
-    scene1.add(directionalLight);
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.1);
-    scene2.add(directionalLight2);
-
-    container.append(renderer1.domElement);
-    container2.append(renderer2.domElement);
-
-    camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-    camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-
-    // var axes = new THREE.AxesHelper(1000)
-    // scene.add(axes)
-
-    const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
-    const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
-    createBoard(scene1, "YOU", 0xbbada0, 0xcdc1b5)
-    createBoard(scene2, "OPONENT", 0xD98880, 0xD98880)
-
 
 
     function render() {
@@ -196,109 +237,8 @@ async function init() {
         renderer1.render(scene1, camera1);
         renderer2.render(scene2, camera2);
     }
-    window.addEventListener('resize', onWindowResize, false);
-
-    function onWindowResize() {
-
-        camera1.aspect = (window.innerWidth / 2) / window.innerHeight;
-        camera1.updateProjectionMatrix();
-        camera2.aspect = (window.innerWidth / 2) / window.innerHeight;
-        camera2.updateProjectionMatrix();
-
-        camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-        camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-
-        renderer1.setSize(window.innerWidth / 2, window.innerHeight);
-        renderer2.setSize(window.innerWidth / 2, window.innerHeight);
-
-    }
 
     render();
-
-
-
-    function createBoard(sceneBoard, player, borderColor, gridColor) {
-
-        loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
-
-            const textMesh = new THREE.TextGeometry(player, {
-                font: font,
-                size: 30,
-                height: 5,
-                curveSegments: 12,
-                bevelEnabled: true,
-                bevelThickness: 5,
-                bevelSize: 1,
-                bevelOffset: 0,
-                bevelSegments: 5
-            });
-            const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
-            const playerName = new THREE.Mesh(textMesh, materialText)
-            playerName.rotateY((Math.PI * 0.5))
-            playerName.position.set(0, 250, 230)
-            sceneBoard.add(playerName)
-        });
-
-        const material = new THREE.MeshPhongMaterial({
-            color: borderColor,
-            specular: 0xffffff,
-            shininess: 50,
-            side: THREE.DoubleSide,
-        })
-        const borderLeftGeometry = new THREE.BoxGeometry(80, 460, 30);
-        const borderLeft = new THREE.Mesh(borderLeftGeometry, material);
-        borderLeft.position.set(0, 0, 215)
-
-        const borderRightGeometry = new THREE.BoxGeometry(80, 460, 30);
-        const borderRight = new THREE.Mesh(borderRightGeometry, material);
-        borderRight.position.set(0, 0, -215)
-
-        const borderTopGeometry = new THREE.BoxGeometry(80, 30, 400);
-        const borderTop = new THREE.Mesh(borderTopGeometry, material);
-        borderTop.position.set(0, 215, 0)
-
-        const borderBottomGeometry = new THREE.BoxGeometry(80, 30, 400);
-        const borderBottom = new THREE.Mesh(borderBottomGeometry, material);
-        borderBottom.position.set(0, -215, 0)
-
-        const planeMaterial = new THREE.MeshPhongMaterial({
-            color: gridColor,
-            specular: 0xffffff,
-            shininess: 50,
-            side: THREE.DoubleSide,
-        })
-
-
-        const borderPlaneGeometry = new THREE.PlaneGeometry(400, 400);
-        const borderPlane = new THREE.Mesh(borderPlaneGeometry, planeMaterial);
-        borderPlane.position.set(-26, 0, 0)
-        borderPlane.rotateY((Math.PI * 0.5))
-
-        const secondPlaneMaterial = new THREE.MeshPhongMaterial({
-            color: borderColor,
-            specular: 0xffffff,
-            shininess: 50,
-            side: THREE.DoubleSide,
-        })
-        const borderSecondPlaneGeometry = new THREE.PlaneGeometry(400, 400);
-        const borderSecondPlane = new THREE.Mesh(borderSecondPlaneGeometry, secondPlaneMaterial);
-        borderSecondPlane.position.set(-40, 0, 0)
-        borderSecondPlane.rotateY((Math.PI * 0.5))
-
-        const gridHelper = new THREE.GridHelper(399, 4)
-        gridHelper.position.set(-23, 0, 0)
-        gridHelper.geometry.rotateX((Math.PI * 0.5))
-        gridHelper.geometry.rotateY((Math.PI * 0.5))
-
-
-        sceneBoard.add(borderLeft);
-        sceneBoard.add(borderRight);
-        sceneBoard.add(borderTop);
-        sceneBoard.add(borderBottom);
-        sceneBoard.add(borderPlane);
-        sceneBoard.add(borderSecondPlane);
-        sceneBoard.add(gridHelper)
-    }
     function fillCubeInfo(playerNumber, TABLE_FROM_SERVER) {
 
         let TABLE_FROM_SERVER_SIMPLE;
@@ -382,61 +322,14 @@ async function init() {
         removeCubes(playerNumber)
         for (let i = 0; i < 16; i++) {
             if (!(cubesInfo[playerNumber][i].value === 0)) {
-                const materialCube = [
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-                        map: switchMaterial(cubesInfo[playerNumber][i].value).texture
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                ]
-                const mesh = new THREE.BoxGeometry(85, 85, 85);
-                const cube = new THREE.Mesh(mesh, materialCube);
-                cube.position.set(cubesInfo[playerNumber][i].x, cubesInfo[playerNumber][i].y, cubesInfo[playerNumber][i].z)
-                cubes[playerNumber].push(cube)
-
-                if (playerNumber == 0) {
-                    scene1.add(cube)
-                } else if (playerNumber == 1) {
-                    scene2.add(cube)
-                }
-
-
+                let color = switchMaterial(cubesInfo[playerNumber][i].value).color
+                let texture = switchMaterial(cubesInfo[playerNumber][i].value).texture
+                let x = cubesInfo[playerNumber][i].x
+                let y = cubesInfo[playerNumber][i].y
+                let z = cubesInfo[playerNumber][i].z
+                let cube = new Cube(scene1, scene2, color, texture, playerNumber, x, y, z)
+                
+                cubes[playerNumber].push(cube.getCube())
             }
         }
     }

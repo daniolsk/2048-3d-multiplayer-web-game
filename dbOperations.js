@@ -14,7 +14,7 @@ const saveScore = (scoreObj, res) => {
 
 const getBestScores = (res) => {
     Score.find({})
-        .sort({ messages: -1 })
+        .sort({ score: -1 })
         .limit(10)
         .then(scores => {
             res.send(JSON.stringify({scores: scores}));

@@ -1,2 +1,0 @@
-1. Klasy +  webpack + dziedziczenie
-2. Model 3D (Plansza)

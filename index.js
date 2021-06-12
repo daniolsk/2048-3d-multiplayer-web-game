@@ -1,11 +1,11 @@
+const fs = require('fs');
+
 const express = require('express');
 const app = express();
 
 const mongoose = require('mongoose');
-// zaq1@WSX
 
 const { clearInterval } = require('timers');
-const { v4: uuidv4 } = require('uuid');
 
 const { saveScore, getBestScores } = require('./dbOperations');
 
@@ -21,9 +21,18 @@ const io = require('socket.io')(server);
 
 const PORT = process.env.PORT || 3000;
 
+const HEROKU_ULR = process.env.HEROKU_URL || null;
+
+fs.writeFile('./static/js/config.js', `const PORT = ${PORT}; const HEROKU_URL = ${HEROKU_ULR ? (`'${HEROKU_ULR}'`) : null};`, err => {
+  if (err) {
+    console.error(err)
+    return
+  }
+})
+
 let GAME_STARTED = false;
 let GAME_STARTING = false;
-let TIME = 30;
+let TIME = 90;
 let PLAYER_COUNT = 0;
 let PLAYERS = [];
 let STARTING_TIMEOUT = null;
@@ -242,7 +251,7 @@ io.on('connection', client => {
                             io.sockets.emit("WINNER", {message: "Time is up! DRAW! Score was " + score0, winnerId: null, score: PLAYERS[1].score});
                         }
 
-                        TIME = 30;
+                        TIME = 90;
                     }
                 }, 1000);
 
@@ -269,7 +278,7 @@ io.on('connection', client => {
 
                 clearInterval(TIME_INTERVAL);
 
-                TIME = 30;
+                TIME = 90;
 
                 io.sockets.emit("WINNER", {message: "Player " + playerToMove.id + " has lost!", winnerId: otherPlayer[0].id, score: otherPlayer[0].score});
             }
@@ -293,7 +302,7 @@ io.on('connection', client => {
                 }
                 GAME_STARTED = false;
                 GAME_STARTING = false;
-                TIME = 30;
+                TIME = 90;
                 PLAYER_COUNT--;
             } else {
                 PLAYER_COUNT--;
@@ -309,7 +318,6 @@ app.get('/', (req, res) => {
 
 // score
 app.post('/api/saveScore', (req, res) => {
-    console.log(req.body);
 
     saveScore(req.body, res);
 
