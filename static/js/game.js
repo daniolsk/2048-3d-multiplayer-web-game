@@ -52,111 +52,42 @@ async function init() {
     const container = document.getElementById('root');
     const container2 = document.getElementById('root2');
 
-    var scene1 = new THREE.Scene();
-    var scene2 = new THREE.Scene();
+    var scene1 = new Scene();
+    var scene2 = new Scene();
 
-    var camera1 = new THREE.PerspectiveCamera(45, (window.innerWidth / 2) / window.innerHeight, 0.1, 10000)
-    var camera2 = new THREE.PerspectiveCamera(45, (window.innerWidth / 2) / window.innerHeight, 0.1, 10000)
+    var renderer1 = new Renderer(scene1, container, 0xE1E1E1);
+    var renderer2 = new Renderer(scene2, container2, 0xF9A197);
 
-    var renderer1 = new THREE.WebGLRenderer();
-    var renderer2 = new THREE.WebGLRenderer();
+    var camera1 = new Camera()
+    var camera2 = new Camera()
 
-    renderer1.setClearColor(0xE1E1E1);
 
-    renderer1.setSize(window.innerWidth / 2, window.innerHeight)
+    const light1 = new AmbientLight(scene1);
+    const light2 = new AmbientLight(scene2);
 
-    renderer2.setClearColor(0xF9A197);
+    const directionalLight = new DirectionalLight(scene1);
+    const directionalLight2 = new DirectionalLight(scene2);
 
-    renderer2.setSize(window.innerWidth / 2, window.innerHeight)
-
-    var light1 = new THREE.AmbientLight(0xffffff, 1);
-    scene1.add(light1);
-    var light2 = new THREE.AmbientLight(0xffffff, 1);
-    scene2.add(light2);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
-    scene1.add(directionalLight);
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.1);
-    scene2.add(directionalLight2);
-
-    container.append(renderer1.domElement);
-    container2.append(renderer2.domElement);
-
-    camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-    camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-
-    // var axes = new THREE.AxesHelper(1000)
-    // scene.add(axes)
 
     const controls = new THREE.OrbitControls(camera1, renderer1.domElement);
     const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
 
     createBoard(scene1, "YOU", 0x808080, 0xBDBDBD)
     createBoard(scene2, "OPPONENT", 0xB24134, 0xDD6558)
-    function createBoard(sceneBoard, player, borderColor, planeColor, modelBoard) {
+    function createBoard(sceneBoard, player, borderColor, planeColor) {
 
-        const textMesh = new THREE.TextGeometry(player, {
-            font: fonts['fonts/helvetiker_regular.typeface.json'],
-            size: 30,
-            height: 5,
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 5,
-            bevelSize: 1,
-            bevelOffset: 0,
-            bevelSegments: 5
-        });
-        const materialText = new THREE.MeshBasicMaterial({ color: 0x000000, })
-        const playerName = new THREE.Mesh(textMesh, materialText)
-        playerName.rotateY((Math.PI * 0.5))
-
-        let model;
+        const text = new TextGeometry(sceneBoard, player, fonts['fonts/helvetiker_regular.typeface.json'])
 
         if (player == "YOU") {
-            playerName.position.set(0, 250, 40)
-            model = models['/model/boardPlayer.dae'].clone()
+            const boardModel = new BoardModel(sceneBoard, models['/model/boardPlayer.dae'].clone(), borderColor)
         }
         else {
-            playerName.position.set(0, 250, 105)
-            model = models['/model/boardOpponent.dae'].clone()
+            const boardModel = new BoardModel(sceneBoard, models['/model/boardOpponent.dae'].clone(), borderColor)
         }
-        sceneBoard.add(playerName)
 
-        const material = new THREE.MeshPhongMaterial({
-            color: borderColor,
-            specular: 0xffffff,
-            shininess: 50,
-            side: THREE.DoubleSide,
-        })
+        const plane = new Plane(sceneBoard, planeColor)
 
-        model.traverse(function (child) {
-            if (child.isMesh) {
-                child.material = material
-            }
-        })
-
-        sceneBoard.add(model);
-
-        const materialPlane = new THREE.MeshPhongMaterial({
-            color: planeColor,
-            specular: 0xffffff,
-            shininess: 50,
-            side: THREE.DoubleSide,
-        })
-        const planeMesh = new THREE.PlaneGeometry(400, 400);
-        const plane = new THREE.Mesh(planeMesh, materialPlane)
-        plane.rotateY((Math.PI * 0.5))
-        plane.position.set(-26, 0, 0)
-        sceneBoard.add(plane)
-
-
-        const gridHelper = new THREE.GridHelper(399, 4)
-        gridHelper.position.set(-20, 0, 0)
-        gridHelper.geometry.rotateX((Math.PI * 0.5))
-        gridHelper.geometry.rotateY((Math.PI * 0.5))
-
-
-        sceneBoard.add(gridHelper)
+        const grid = new Grid(sceneBoard)
     }
 
     //websockety
@@ -302,22 +233,6 @@ async function init() {
         renderer1.render(scene1, camera1);
         renderer2.render(scene2, camera2);
     }
-    window.addEventListener('resize', onWindowResize, false);
-
-    function onWindowResize() {
-
-        camera1.aspect = (window.innerWidth / 2) / window.innerHeight;
-        camera1.updateProjectionMatrix();
-        camera2.aspect = (window.innerWidth / 2) / window.innerHeight;
-        camera2.updateProjectionMatrix();
-
-        camera1.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-        camera2.position.set(1000 / ((window.innerWidth / 2) / 1000), 220, 0)
-
-        renderer1.setSize(window.innerWidth / 2, window.innerHeight);
-        renderer2.setSize(window.innerWidth / 2, window.innerHeight);
-
-    }
 
     render();
     function fillCubeInfo(playerNumber, TABLE_FROM_SERVER) {
@@ -403,61 +318,14 @@ async function init() {
         removeCubes(playerNumber)
         for (let i = 0; i < 16; i++) {
             if (!(cubesInfo[playerNumber][i].value === 0)) {
-                const materialCube = [
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-                        map: switchMaterial(cubesInfo[playerNumber][i].value).texture
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                    new THREE.MeshPhongMaterial({
-                        color: switchMaterial(cubesInfo[playerNumber][i].value).color,
-                        specular: 0xffffff,
-                        shininess: 50,
-                        side: THREE.DoubleSide,
-
-                    }),
-                ]
-                const mesh = new THREE.BoxGeometry(85, 85, 85);
-                const cube = new THREE.Mesh(mesh, materialCube);
-                cube.position.set(cubesInfo[playerNumber][i].x, cubesInfo[playerNumber][i].y, cubesInfo[playerNumber][i].z)
-                cubes[playerNumber].push(cube)
-
-                if (playerNumber == 0) {
-                    scene1.add(cube)
-                } else if (playerNumber == 1) {
-                    scene2.add(cube)
-                }
-
-
+                let color = switchMaterial(cubesInfo[playerNumber][i].value).color
+                let texture = switchMaterial(cubesInfo[playerNumber][i].value).texture
+                let x = cubesInfo[playerNumber][i].x
+                let y = cubesInfo[playerNumber][i].y
+                let z = cubesInfo[playerNumber][i].z
+                let cube = new Cube(scene1, scene2, color, texture, playerNumber, x, y, z)
+                
+                cubes[playerNumber].push(cube.getCube())
             }
         }
     }
