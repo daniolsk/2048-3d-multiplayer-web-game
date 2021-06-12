@@ -213,18 +213,22 @@ async function init() {
     btnEl.addEventListener("click", (e) => {
         let nick = document.getElementById("nick-input").value;
 
-        fetch("/api/saveScore", {
-            method: 'POST',
-            mode: 'same-origin',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nick: nick, score: score1 })
-        }).then((response) => response.json()).then(data => {
-            console.log(data);
-            window.location = '/leaderboard';
-        })
+        if (nick != ""){
+            fetch("/api/saveScore", {
+                method: 'POST',
+                mode: 'same-origin',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nick: nick, score: score1 })
+            }).then((response) => response.json()).then(data => {
+                console.log(data);
+                window.location = '/leaderboard';
+            })
+        } else {
+            alert("Please enter your nickname!");
+        }
     })
 
 
