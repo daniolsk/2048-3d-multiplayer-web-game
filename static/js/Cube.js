@@ -1,8 +1,9 @@
 class Cube {
-    constructor(scene1, scene2, color, texture, playerNumber, x, y, z) {
+    constructor(scene1, scene2, color, texture, playerNumber, x, y, z, model) {
         this.scene1 = scene1
         this.scene2 = scene2
         this.color = color
+        this.model = model
         this.texture = texture
         this.playerNumber = playerNumber
         this.x = x
@@ -49,19 +50,24 @@ class Cube {
             }),
         ]
 
-        const mesh = new THREE.BoxGeometry(85, 85, 85);
-        this.cube = new THREE.Mesh(mesh, materialCube);
-        this.cube.position.set(this.x, this.y, this.z)
+
+        this.model.traverse(function (child) {
+            if (child.isMesh) {
+                child.material = materialCube
+            }
+        })
+
+        this.model.position.set(this.x, this.y, this.z)
 
         if (this.playerNumber == 0) {
-            this.scene1.add(this.cube)
+            this.scene1.add(this.model)
         } else if (this.playerNumber == 1) {
-            this.scene2.add(this.cube)
+            this.scene2.add(this.model)
         }
 
     }
     getCube()
     {
-        return this.cube
+        return this.model
     }
 }

@@ -35,12 +35,28 @@ input[type='button']:hover {
     cursor: pointer;
 }
 
-table,
-td,
-th {
-    border: 1px solid black;
+table
+{
+    border: 2px solid black;
+    border-radius: 2%;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+    background-color: rgb(255, 116, 116);
+}
+td
+{
+    border-right: 2px groove black;
+    border-bottom: 2px groove black;
     padding: 15px;
     margin-top: 30px;
     margin-bottom: 30px;
     font-size: 1.1em;
+}
+th {
+    border-bottom: 2px ridge black;
+    padding: 15px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 1.5em;
 }

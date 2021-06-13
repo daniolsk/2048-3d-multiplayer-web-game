@@ -26,7 +26,8 @@ async function init() {
 
     const modelsTab = [
         '/model/boardPlayer.dae',
-        '/model/boardOpponent.dae'
+        '/model/boardOpponent.dae',
+        '/model/cube.dae'
     ]
 
     const textureLoader = new THREE.TextureLoader()
@@ -327,7 +328,7 @@ async function init() {
                 let x = cubesInfo[playerNumber][i].x
                 let y = cubesInfo[playerNumber][i].y
                 let z = cubesInfo[playerNumber][i].z
-                let cube = new Cube(scene1, scene2, color, texture, playerNumber, x, y, z)
+                let cube = new Cube(scene1, scene2, color, texture, playerNumber, x, y, z, models['/model/cube.dae'].clone())
                 
                 cubes[playerNumber].push(cube.getCube())
             }
