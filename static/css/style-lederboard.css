@@ -15,6 +15,19 @@ body {
     color: white;
 }
 
+footer {
+    position: absolute;
+    z-index: 5;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    background-color: rgb(255, 116, 116);
+    padding: 3px 0;
+    font-size: 0.9em;
+    color: black;
+}
+
 button,
 input[type='button'] {
     background-color: rgb(255, 116, 116);
@@ -35,8 +48,7 @@ input[type='button']:hover {
     cursor: pointer;
 }
 
-table
-{
+table {
     border: 2px solid black;
     border-radius: 2%;
     margin-top: 30px;
@@ -44,8 +56,7 @@ table
     font-size: 1.1em;
     background-color: rgb(255, 116, 116);
 }
-td
-{
+td {
     border-right: 2px groove black;
     border-bottom: 2px groove black;
     padding: 15px;
